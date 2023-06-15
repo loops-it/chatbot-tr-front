@@ -73,7 +73,7 @@ export default function Chatbot() {
     // if (liveAgent === false) {
     e.preventDefault();
 
-    
+    let engQuestion = ''
 
 
     setError(null);
@@ -113,8 +113,8 @@ export default function Chatbot() {
         }),
       });
       const questionEnglishresponse = await response.json();
-      question = questionEnglishresponse.translationsToEng
-      console.log("questionEnglish: ", questionEnglishresponse.translationsToEng)
+      engQuestion = questionEnglishresponse.success
+      console.log("questionEnglish: ", questionEnglishresponse.success)
     } catch (error) {
       console.error(error);
     }
@@ -158,7 +158,7 @@ export default function Chatbot() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question: question }),
+      body: JSON.stringify({ question: engQuestion }),
     });
 
     const data = await response.json();
@@ -226,7 +226,7 @@ export default function Chatbot() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ question: question }),
+        body: JSON.stringify({ question: engQuestion }),
       });
 
       const data = await response.json();
@@ -243,7 +243,7 @@ export default function Chatbot() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ question: question }),
+          body: JSON.stringify({ question: engQuestion }),
         });
 
         const data = await response.json();
