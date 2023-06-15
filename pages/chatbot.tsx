@@ -100,7 +100,7 @@ export default function Chatbot() {
     // get user message
     let question = query.trim();
     console.log("1 :" , question)
-    const translateInput = await fetch("http://localhost:9001/translate-to-english", {
+    const translateInput = await fetch("https://chatbot-tr-back.vercel.app/home/translate-to-english", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
