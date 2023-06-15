@@ -100,20 +100,25 @@ export default function Chatbot() {
     // get user message
     let question = query.trim();
     console.log("1 :" , question)
-    const translateInput = await fetch("https://chatbot-tr-back.vercel.app/home/translate-to-english", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ question: question }),
-    });
+    try {
+      console.log("question : ", question)
 
-    const datatranslateEnglish = await translateInput.json();
-    if (translateInput.status !== 200) {
-      throw datatranslateEnglish.error || new Error(`Request failed with status ${translateInput.status}`);
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: question,
+        }),
+      });
+      const questionEnglishresponse = await response.json();
+      question = questionEnglishresponse.translationsToEng
+      console.log("questionEnglish: ", questionEnglishresponse.translationsToEng)
+    } catch (error) {
+      console.error(error);
     }
-    const questionEnglish = datatranslateEnglish.translationsToEng;
-    console.log("1 :" , questionEnglish)
+    // console.log("1 :" , questionEnglish)
     
 
     setLoading(true);
@@ -153,7 +158,7 @@ export default function Chatbot() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question: questionEnglish }),
+      body: JSON.stringify({ question: question }),
     });
 
     const data = await response.json();
