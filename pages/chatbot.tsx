@@ -113,8 +113,8 @@ export default function Chatbot() {
         }),
       });
       const questionEnglishresponse = await response.json();
-      engQuestion = questionEnglishresponse.success.translationsToEng
-      console.log("questionEnglish: ", questionEnglishresponse.success.translationsToEng)
+      engQuestion = questionEnglishresponse.success
+      console.log("questionEnglish: ", questionEnglishresponse.success)
     } catch (error) {
       console.error(error);
     }

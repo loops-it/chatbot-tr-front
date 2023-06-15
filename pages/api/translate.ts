@@ -29,7 +29,7 @@ export default async function (req: { body: {
     
         const data = await response.json();
         console.log("tr :",data.translationsToEng)
-        res.status(200).json({ success: data });
+        res.status(200).json({ success: data.translationsToEng });
 
     
       } catch (error) {
