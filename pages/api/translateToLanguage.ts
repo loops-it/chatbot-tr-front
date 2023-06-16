@@ -12,7 +12,7 @@ export default async function (req: { body: { question: string; selectedLanguage
 
   try {
     console.log("data : ", question, language)
-    const response = await fetch('https://chatbot-tr-back.vercel.app/home/translate-to-selected-language', {
+    const response = await fetch('https://chatbot-tr-back-pk9k.vercel.app/home/translate-to-selected-language', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
