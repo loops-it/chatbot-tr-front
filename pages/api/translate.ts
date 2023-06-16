@@ -10,7 +10,7 @@ export default async function (req: { body: { question: string; }; } , res: { st
     
       try {
         console.log("data save rating: ", question,)
-        const response = await fetch('http://localhost:9001/home/translate-to-english', {
+        const response = await fetch('https://chatbot-tr-back.vercel.app/home/translate-to-english', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
