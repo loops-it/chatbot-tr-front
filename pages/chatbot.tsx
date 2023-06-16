@@ -40,11 +40,7 @@ export default function Chatbot() {
   const [agentInfoMsg, setAgentInfoMsg] = useState(false);
   const [agentImage, setAgentImage] = useState('/chat-header.png');
   const [greeting, setGreeting] = useState(false);
-
-
-
-
-
+  const [language, setLanguage] = useState('Sinhala'); //English
 
   useEffect(() => {
     const now = Date.now();
@@ -61,20 +57,33 @@ export default function Chatbot() {
     // console.log("text there : ", checkNotSure)
   }, [checkNotSure, agentName, agentInfoMsg, agentImage, greeting]);
 
+  let finalMessage = '';
+  let text = '';
+  // translate to language
+  async function translateToLanguage(text: any) {
+    console.log('question : ', text);
 
-
-
-
-
-
+    const response = await fetch('/api/translateToLanguage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        question: text,
+        language: language,
+      }),
+    });
+    const questionEnglishresponse = await response.json();
+    finalMessage = questionEnglishresponse.success;
+    console.log('questionLanguage: ', finalMessage);
+  }
 
   //handle form submission
   async function handleSubmit(e: any) {
     // if (liveAgent === false) {
     e.preventDefault();
 
-    let engQuestion = ''
-
+    let engQuestion = '';
 
     setError(null);
 
@@ -96,12 +105,11 @@ export default function Chatbot() {
       pending: undefined,
     }));
 
-
     // get user message
     let question = query.trim();
-    console.log("1 :" , question)
+    console.log('1 :', question);
     try {
-      console.log("question : ", question)
+      console.log('question : ', question);
 
       const response = await fetch('/api/translate', {
         method: 'POST',
@@ -113,13 +121,12 @@ export default function Chatbot() {
         }),
       });
       const questionEnglishresponse = await response.json();
-      engQuestion = questionEnglishresponse.success
-      console.log("questionEnglish: ", questionEnglishresponse.success)
+      engQuestion = questionEnglishresponse.success;
+      console.log('questionEnglish: ', engQuestion);
     } catch (error) {
       console.error(error);
     }
-    // console.log("1 :" , questionEnglish)
-    
+    console.log('1 :', engQuestion);
 
     setLoading(true);
     setQuery('');
@@ -127,227 +134,189 @@ export default function Chatbot() {
 
     const ctrl = new AbortController();
 
-    // const greetingTypes = [
-    //   "Hi", 
-    //   "Hello", 
-    //   "Hi,there", 
-    //   "Good morning", 
-    //   "Thank you", 
-    //   "How are you ?", 
-    //   "How are you bot", 
-    //   "What is your name",
-    //   "Good afternoon", 
-    //   "Good evening", 
-    //   "Good night",
-    // ];
-    // const regex = new RegExp(`^(${greetingTypes.join("|")})$`, "i");
-    // const greetingIncluded = regex.test(question.trim());
-
-    // const greetingTypes = [
-    // ["What is your name", "My name is DFCC GPT."],
-    // ["Who is your creator", "My creator is xyz"],
-    // ];
-
-    // const matchedGreetingType = greetingTypes.find(([greeting]) => greeting.toLowerCase() === question.toLowerCase());
-
-    // const regex = new RegExp(`^(${greetingTypes.map(([greeting]) => greeting).join("|")})$`, "i");
-    // const greetingMatch = question.trim().match(regex);
-
-    const response = await fetch("/api/botInformationCheck", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ question: engQuestion }),
-    });
-
-    const data = await response.json();
-    if (response.status !== 200) {
-      throw data.error || new Error(`Request failed with status ${response.status}`);
-    }
-    const matchedGreetingType = data.info_result;
-    console.log("matchedGreetingType : ", matchedGreetingType )
-
-    if(matchedGreetingType.toLowerCase().includes("name")){
-        // const [, reply] = matchedGreetingType;
-
-        // console.log(reply);
-
-        setTimeout(()=>{
-          setMessageState((state) => ({
-            ...state,
-            messages: [
-              ...state.messages,
-              {
-                type: 'apiMessage',
-                message: "My name is DFCC GPT.",
-              },
-            ],
-            pending: undefined,
-          }));
-          setLoading(false);
-        },3000)
-    }
-    else if(matchedGreetingType.toLowerCase().includes("age")){
-      setTimeout(()=>{
-        setMessageState((state) => ({
-          ...state,
-          messages: [
-            ...state.messages,
-            {
-              type: 'apiMessage',
-              message: "I'm 20 years old",
-            },
-          ],
-          pending: undefined,
-        }));
-        setLoading(false);
-      },3000)
-    }
-    else if(matchedGreetingType.toLowerCase().includes("country")){
-      setTimeout(()=>{
-        setMessageState((state) => ({
-          ...state,
-          messages: [
-            ...state.messages,
-            {
-              type: 'apiMessage',
-              message: "I live in Sri Lanka",
-            },
-          ],
-          pending: undefined,
-        }));
-        setLoading(false);
-      },3000)
-    }
-    else{
-      const response = await fetch("/api/generateGreeting", {
-        method: "POST",
+    if (engQuestion !== '') {
+      const response = await fetch('/api/botInformationCheck', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ question: engQuestion }),
       });
 
       const data = await response.json();
       if (response.status !== 200) {
-        throw data.error || new Error(`Request failed with status ${response.status}`);
+        throw (
+          data.error ||
+          new Error(`Request failed with status ${response.status}`)
+        );
       }
-      const isGreet = data.greet_result;
-      console.log("isGreet : ", isGreet )
+      const matchedGreetingType = data.info_result;
+      console.log('matchedGreetingType : ', matchedGreetingType);
 
-    if (isGreet.toLowerCase().includes("yes")) {
-      try {
-        const response = await fetch("/api/generate", {
-          method: "POST",
+      if (matchedGreetingType.toLowerCase().includes('name')) {
+        text = 'My name is DFCC GPT.'
+        await translateToLanguage(text);
+        setTimeout(() => {
+          setMessageState((state) => ({
+            ...state,
+            messages: [
+              ...state.messages,
+              {
+                type: 'apiMessage',
+                message: finalMessage,
+              },
+            ],
+            pending: undefined,
+          }));
+          setLoading(false);
+        }, 3000);
+      } else if (matchedGreetingType.toLowerCase().includes('age')) {
+        text = "I'm 20 years old"
+        await translateToLanguage(text);
+        setTimeout(() => {
+          setMessageState((state) => ({
+            ...state,
+            messages: [
+              ...state.messages,
+              {
+                type: 'apiMessage',
+                message: finalMessage,
+              },
+            ],
+            pending: undefined,
+          }));
+          setLoading(false);
+        }, 3000);
+      } else if (matchedGreetingType.toLowerCase().includes('country')) {
+        text = 'I live in Sri Lanka'
+        await translateToLanguage(text);
+        setTimeout(() => {
+          setMessageState((state) => ({
+            ...state,
+            messages: [
+              ...state.messages,
+              {
+                type: 'apiMessage',
+                message: finalMessage,
+              },
+            ],
+            pending: undefined,
+          }));
+          setLoading(false);
+        }, 3000);
+      } else {
+        const response = await fetch('/api/generateGreeting', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ question: engQuestion }),
         });
 
         const data = await response.json();
         if (response.status !== 200) {
-          throw data.error || new Error(`Request failed with status ${response.status}`);
+          throw (
+            data.error ||
+            new Error(`Request failed with status ${response.status}`)
+          );
         }
+        const isGreet = data.greet_result;
+        console.log('isGreet : ', isGreet);
 
-        setMessageState((state) => ({
-          ...state,
-          messages: [
-            ...state.messages,
-            {
-              type: 'apiMessage',
-              message: data.result,
-            },
-          ],
-          pending: undefined,
-        }));
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-      }
+        if (isGreet.toLowerCase().includes('yes')) {
+          try {
+            const response = await fetch('/api/generate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ question: engQuestion }),
+            });
 
-    } else {
-      try {
-        fetchEventSource('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            question,
-            history,
-          }),
-          signal: ctrl.signal,
-          onmessage: async (event) => {
-            if (event.data === '[DONE]') {
-              setMessageState((state) => ({
-                history: [...state.history, [question, state.pending ?? '']],
-                messages: [
-                  ...state.messages,
-                  {
-                    type: 'apiMessage',
-                    message: state.pending ?? '',
-                    sourceDocs: state.pendingSourceDocs,
-                  },
-                ],
-                pending: undefined,
-                pendingSourceDocs: undefined,
-              }));
-              setLoading(false);
-              ctrl.abort();
-
-            } else {
-              const data = JSON.parse(event.data);
-              if (data.sourceDocs) {
-                setMessageState((state) => ({
-                  ...state,
-                  pendingSourceDocs: data.sourceDocs,
-                }));
-              } else {
-                setMessageState((state) => ({
-                  ...state,
-                  pending: (state.pending ?? '') + data.data,
-                }));
-              }
+            const data = await response.json();
+            if (response.status !== 200) {
+              throw (
+                data.error ||
+                new Error(`Request failed with status ${response.status}`)
+              );
             }
-          },
-        });
-      } catch (error) {
-        setLoading(false);
-        setError('An error occurred while fetching the data. Please try again.');
-        console.log('error', error);
+
+            await translateToLanguage(data.result);
+            setMessageState((state) => ({
+              ...state,
+              messages: [
+                ...state.messages,
+                {
+                  type: 'apiMessage',
+                  message: data.result,
+                },
+              ],
+              pending: undefined,
+            }));
+            setLoading(false);
+          } catch (error) {
+            console.error(error);
+          }
+        } else {
+          try {
+            fetchEventSource('/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                question,
+                history,
+              }),
+              signal: ctrl.signal,
+              onmessage: async (event) => {
+                if (event.data === '[DONE]') {
+                  await translateToLanguage(pending ?? '');
+                  setMessageState((state) => ({
+                    history: [
+                      ...state.history,
+                      [question, state.pending ?? ''],
+                    ],
+                    messages: [
+                      ...state.messages,
+                      {
+                        type: 'apiMessage',
+                        message: finalMessage,
+                        sourceDocs: state.pendingSourceDocs,
+                      },
+                    ],
+                    pending: undefined,
+                    pendingSourceDocs: undefined,
+                  }));
+                  setLoading(false);
+                  ctrl.abort();
+                } else {
+                  const data = JSON.parse(event.data);
+                  if (data.sourceDocs) {
+                    setMessageState((state) => ({
+                      ...state,
+                      pendingSourceDocs: data.sourceDocs,
+                    }));
+                  } else {
+                    setMessageState((state) => ({
+                      ...state,
+                      pending: (state.pending ?? '') + data.data,
+                    }));
+                  }
+                }
+              },
+            });
+          } catch (error) {
+            setLoading(false);
+            setError(
+              'An error occurred while fetching the data. Please try again.',
+            );
+            console.log('error', error);
+          }
+        }
       }
     }
-    }
-
-
-    // const response = await fetch('http://localhost:5000/nlp', {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body: JSON.stringify({ question: question }),
-    //     });
-
-    //     if (response.status !== 200) {
-    //       const error = await response.json();
-    //       throw new Error(error.message);
-    //     }
-    //     const data = await response.json();
-    //     const sentimentScore = data.sentimentScore;
-    // const greetingMatch = data;
-    // console.log('sentiment : ', greetingMatch);
-    // try {
-      
-
   }
-
-
-
-
-
-
 
   //prevent empty submissions
   const handleEnter = useCallback(
@@ -362,32 +331,23 @@ export default function Chatbot() {
     [query],
   );
 
-
-
-
-
-
-
-
   const chatMessages = useMemo(() => {
     return [
       ...messages,
       ...(pending
         ? [
-          {
-            type: 'apiMessage',
-            message: pending,
-            sourceDocs: pendingSourceDocs,
-          },
-        ]
+            {
+              type: 'apiMessage',
+              message: pending,
+              sourceDocs: pendingSourceDocs,
+            },
+          ]
         : []),
     ];
   }, [messages, pending, pendingSourceDocs]);
   // console.log(messages);
 
   // console.log('messages : ', messages);
-
-
 
   //scroll to bottom of chat
   useEffect(() => {
@@ -396,11 +356,7 @@ export default function Chatbot() {
     }
   }, [chatMessages]);
 
-  console.log(messages)
-
-
-
-
+  console.log(messages);
 
   return (
     <Layout>
@@ -411,19 +367,12 @@ export default function Chatbot() {
         </div>
       </div>
 
-
-
       <div className={`${styles.messageWrapper}`}>
-
-
         <div className={styles.botMessageContainerWrapper}>
           <div className="d-flex justify-content-center pt-1">
             <Image src="/chat-logo.png" alt="AI" width={180} height={50} />
           </div>
         </div>
-
-
-
 
         <div
           ref={messageListRef}
@@ -450,7 +399,6 @@ export default function Chatbot() {
               className = styles.apimessage;
               userStyles = 'justify-content-start flex-row float-start';
               wrapper = 'align-items-start justify-content-start';
-
             } else {
               icon = (
                 <Image
@@ -470,7 +418,6 @@ export default function Chatbot() {
                   : styles.usermessage;
             }
 
-
             return (
               <>
                 <div
@@ -487,19 +434,15 @@ export default function Chatbot() {
                       >
                         <p className="mb-0">{message.message}</p>
                       </div>
-
                     </div>
                   </div>
                 </div>
-
               </>
             );
           })}
 
-
-
           {showChatRating && (
-            <div className="d-flex flex-column" id='chatRating'>
+            <div className="d-flex flex-column" id="chatRating">
               <div className="d-flex">
                 <Image src="/chat-header.png" alt="AI" width="40" height="40" />
               </div>
@@ -539,7 +482,9 @@ export default function Chatbot() {
                             );
                           })}
                         </div>
-                        <p className={` mb-0 mt-3 text-dark`}>Your feedback :</p>
+                        <p className={` mb-0 mt-3 text-dark`}>
+                          Your feedback :
+                        </p>
                         <textarea
                           className={`${styles.textarea} p-2 rounded`}
                           rows={3}
@@ -548,9 +493,7 @@ export default function Chatbot() {
                           onChange={(e) => setInputValue(e.target.value)}
                         />
 
-                        <button
-                          className="text-white bg-dark p-2 mt-2 rounded"
-                        >
+                        <button className="text-white bg-dark p-2 mt-2 rounded">
                           SEND
                         </button>
                       </div>
@@ -559,17 +502,7 @@ export default function Chatbot() {
                 </div>
               </div>
             </div>
-          )
-          }
-
-
-
-
-
-
-
-
-
+          )}
         </div>
       </div>
 
@@ -586,9 +519,7 @@ export default function Chatbot() {
           id="userInput"
           name="userInput"
           placeholder={
-            loading
-              ? 'Waiting for response...'
-              : 'What is this question about?'
+            loading ? 'Waiting for response...' : 'What is this question about?'
           }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
