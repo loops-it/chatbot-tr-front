@@ -5,7 +5,7 @@ import { Message } from '@/types/chat';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import Image from 'next/image';
 import LoadingDots from '@/components/ui/LoadingDots';
-import { AiOutlineSend } from 'react-icons/ai';
+import { AiOutlineClose, AiOutlineSend } from 'react-icons/ai';
 import { Document } from 'langchain/document';
 
 export default function Chatbot() {
@@ -40,7 +40,9 @@ export default function Chatbot() {
   const [agentInfoMsg, setAgentInfoMsg] = useState(false);
   const [agentImage, setAgentImage] = useState('/chat-header.png');
   const [greeting, setGreeting] = useState(false);
-  const [language, setLanguage] = useState('Sinhala'); //English
+  const [selectedLanguage, setSelectedLanguage] = useState('Sinhala'); //English
+  const [closeState, setCloseState] = useState(false);
+
 
   useEffect(() => {
     const now = Date.now();
@@ -52,6 +54,9 @@ export default function Chatbot() {
   useEffect(() => {
     textAreaRef.current?.focus();
   }, []);
+  useEffect(() => {
+    
+  }, [selectedLanguage]);
 
   useEffect(() => {
     // console.log("text there : ", checkNotSure)
@@ -70,11 +75,11 @@ export default function Chatbot() {
       },
       body: JSON.stringify({
         question: text,
-        language: language,
+        language: selectedLanguage,
       }),
     });
     const questionEnglishresponse = await response.json();
-    finalMessage = questionEnglishresponse.success;
+    finalMessage = questionEnglishresponse.languageText[0];
     console.log('questionLanguage: ', finalMessage);
   }
 
@@ -121,7 +126,7 @@ export default function Chatbot() {
         }),
       });
       const questionEnglishresponse = await response.json();
-      engQuestion = questionEnglishresponse.success;
+      engQuestion = questionEnglishresponse.translateText[0];
       console.log('questionEnglish: ', engQuestion);
     } catch (error) {
       console.error(error);
@@ -318,6 +323,32 @@ export default function Chatbot() {
     }
   }
 
+  const handleCloseChat = async () => {
+    setCloseState(true)
+
+    // const response = await fetch('https://solutions.it-marketing.website/chat-close-by-user', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ chatId: id }),
+    // });
+
+    // if (response.status !== 200) {
+    //   const error = await response.json();
+    //   throw new Error(error.message);
+    // }
+    // const data = await response.json();
+    // console.log(data.success)
+
+    // if (data.success === 'success') {
+    //   setShowChatRating(true)
+    // }
+    // else {
+    //   setShowChatRating(false)
+    // }
+  }
+
   //prevent empty submissions
   const handleEnter = useCallback(
     (e: any) => {
@@ -360,25 +391,124 @@ export default function Chatbot() {
 
   return (
     <Layout>
-      {/* chat top header */}
+      {/* chat top header =======================*/}
       <div className={`${styles.chatTopBar} d-flex flex-row `}>
-        <div className="text-center d-flex flex-row justify-content-between px-2">
+        <div className="col-12 text-center d-flex flex-row justify-content-between px-2">
           <Image src="/chat-top-bar.png" alt="AI" width={150} height={30} />
+          <button className='close-button' onClick={handleCloseChat} title="Close Chat"><AiOutlineClose /> </button>
         </div>
       </div>
+      {/* chat top header end =======================*/}
 
-      <div className={`${styles.messageWrapper}`}>
+      <div ref={messageListRef} className={`${styles.messageWrapper}`}>
+
+
+
+
+
+
+
+        {/* language switch message =================*/}
         <div className={styles.botMessageContainerWrapper}>
+
           <div className="d-flex justify-content-center pt-1">
             <Image src="/chat-logo.png" alt="AI" width={180} height={50} />
           </div>
-        </div>
 
+          <div
+            className={`${styles.botChatMsgContainer} d-flex flex-column my-2`}
+          >
+            <div className="d-flex">
+              <Image src="/chat-header.png" alt="AI" width="40" height="40" />
+            </div>
+            <div className={`d-flex flex-column py-3`}>
+              <div
+                className={`welcomeMessageContainer d-flex flex-column align-items-center`}
+              >
+                <Image
+                  src="/language-img.png"
+                  alt="AI"
+                  width={220}
+                  height={150}
+                />
+                <p className="mt-2">
+                  Hello, Welcome to DFCC Bank. Please select the language to get
+                  started.
+                </p>
+                <p className="">
+                  مرحبًا بكم في DFCC Bank. يرجى تحديد اللغة للبدء.
+                </p>
+
+                <div className="d-flex flex-row welcome-language-select w-100">
+                  <div className="col-6 p-1">
+                    <button
+                      className=" px-3 py-2 rounded"
+                      onClick={() => {
+                        setSelectedLanguage('English');
+                        setMessageState((state) => ({
+                          ...state,
+                          messages: [
+                            ...state.messages,
+                            {
+                              type: 'apiMessage',
+                              message: 'Please ask your question in English.',
+                            },
+                          ],
+                          pending: undefined,
+                        }));
+                      }}
+                    >
+                      English
+                    </button>
+                  </div>
+                  <div className="col-6 p-1">
+                    <button
+                      className="px-3 py-2 rounded"
+                      onClick={() => {
+                        setSelectedLanguage('Arabic');
+                        setMessageState((state) => ({
+                          ...state,
+                          messages: [
+                            ...state.messages,
+                            {
+                              type: 'apiMessage',
+                              message: 'الرجاء طرح سؤالك باللغة الإنجليزية.',
+                            },
+                          ],
+                          pending: undefined,
+                        }));
+                      }}
+                    >
+                      Arabic
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        {/* language switch message end =================*/}
+
+
+
+
+
+        {/* message conversation container =================*/}
         <div
-          ref={messageListRef}
           className={`${styles.messageContentWrapper} d-flex flex-column`}
         >
+
+
+
+
+          {/* user and api messages =================*/}
           {chatMessages.map((message, index) => {
+
+            if (message.type !== 'apiMessage' && message.type !== 'userMessage') {
+              // skip rendering if the message type is not 'apiMessage' or 'userMessage'
+              return null;
+            }
             let icon;
             let className;
             let userHomeStyles;
@@ -386,20 +516,23 @@ export default function Chatbot() {
             let userStyles = 'justify-content-end flex-row-reverse float-end';
 
             if (message.type === 'apiMessage') {
-              icon = (
-                <Image
-                  src={agentImage}
-                  alt="AI"
-                  width="40"
-                  height="40"
-                  className={styles.botImage}
-                  priority
-                />
-              );
+              {
+                icon = (
+                  <Image
+                    src="/chat-header.png"
+                    alt="AI"
+                    width="40"
+                    height="40"
+                    className={styles.botImage}
+                    priority
+                  />
+                );
+              }
               className = styles.apimessage;
               userStyles = 'justify-content-start flex-row float-start';
               wrapper = 'align-items-start justify-content-start';
-            } else {
+
+            } else if (message.type === 'userMessage') {
               icon = (
                 <Image
                   src="/user.png"
@@ -411,12 +544,18 @@ export default function Chatbot() {
                 />
               );
               userHomeStyles = styles.userApiStyles;
-              // The latest message sent by the user will be animated while waiting for a response
               className =
                 loading && index === chatMessages.length - 1
                   ? styles.usermessagewaiting
                   : styles.usermessage;
+            } else {
+
             }
+            const notSureMessages = ["Hmm, I'm not sure", "I'm sorry", "There is no question", "أنا آسف", "هم، لست متأكدا", "من دون شك"];
+            const isLastApiMessageWithNotSure =
+              message.type === 'apiMessage' &&
+              notSureMessages.some((text) => message.message.includes(text)) &&
+              index === chatMessages.length - 1;
 
             return (
               <>
@@ -427,88 +566,49 @@ export default function Chatbot() {
                   <div
                     className={`${styles.botChatMsgContainer} ${userStyles} d-flex my-2`}
                   >
-                    <div className="d-flex">{icon}</div>
+                    <div className="d-flex">
+                      {icon}
+                    </div>
                     <div className={`${wrapper} d-flex flex-column ms-2`}>
                       <div
                         className={`${styles.botMessageContainer} ${userHomeStyles} d-flex flex-column my-1`}
                       >
                         <p className="mb-0">{message.message}</p>
+                        {/* {message.type === 'apiMessage' && trMsg && (
+                          <div
+                            className={`${styles.botMessageContainer} ${styles.apimessage} d-flex flex-column my-1`}
+                          >
+                            <p className="mb-0">{trMsg}</p>
+                          </div>
+                        )} */}
+                        {isLastApiMessageWithNotSure && (
+                          <button
+                            className={`bg-dark rounded text-white py-2 px-3 my-3`}
+                            style={{ width: 'max-content', alignSelf: 'center' }}
+                          >
+                            Connect with Live Agent
+                          </button>
+                        )}
                       </div>
+
                     </div>
                   </div>
                 </div>
+
               </>
             );
           })}
 
-          {showChatRating && (
-            <div className="d-flex flex-column" id="chatRating">
-              <div className="d-flex">
-                <Image src="/chat-header.png" alt="AI" width="40" height="40" />
-              </div>
-              <div className={`d-flex flex-column px-1 py-2`}>
-                <div
-                  className={`welcomeMessageContainer d-flex flex-column align-items-center`}
-                >
-                  <div className="container-fluid m-0 p-0">
-                    <div
-                      className={`${styles.botRateRequest} d-flex flex-row my-2 mx-2`}
-                    >
-                      <div
-                        className={`${styles.botRatingContainer} d-flex flex-column my-1`}
-                      >
-                        <p className={`${styles.rateTitle} mb-0 text-dark`}>
-                          Rate your conversation
-                        </p>
-                        <p className="text-dark mb-0">Add your rating</p>
-                        <div className="star-rating">
-                          {[...Array(5)].map((star, index) => {
-                            index += 1;
-                            return (
-                              <button
-                                type="button"
-                                key={index}
-                                className={
-                                  index <= (hover || rating) ? 'on' : 'off'
-                                }
-                                onClick={() => {
-                                  setRating(index);
-                                }}
-                                onMouseEnter={() => setHover(index)}
-                                onMouseLeave={() => setHover(rating)}
-                              >
-                                <span className="star">&#9733;</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p className={` mb-0 mt-3 text-dark`}>
-                          Your feedback :
-                        </p>
-                        <textarea
-                          className={`${styles.textarea} p-2 rounded`}
-                          rows={3}
-                          maxLength={512}
-                          value={inputValue}
-                          onChange={(e) => setInputValue(e.target.value)}
-                        />
-
-                        <button className="text-white bg-dark p-2 mt-2 rounded">
-                          SEND
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+      {/* message conversation container end =================*/}
+
+
+
+
 
       {/* input fields =================*/}
       <div className={`${styles.inputContainer}`}>
-        {/* <form > */}
         <textarea
           disabled={loading}
           onKeyDown={handleEnter}
@@ -519,14 +619,15 @@ export default function Chatbot() {
           id="userInput"
           name="userInput"
           placeholder={
-            loading ? 'Waiting for response...' : 'What is this question about?'
+            loading
+              ? 'Waiting for response...'
+              : 'What is this question about?'
           }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className={styles.textarea}
         />
         <button
-          // onClick={(liveAgent === false) ? handleSubmit : handleLiveAgent}
           onClick={handleSubmit}
           disabled={loading}
           className={`${styles.inputIconContainer} `}
@@ -534,21 +635,19 @@ export default function Chatbot() {
           {loading ? (
             <div className={styles.loadingwheel}>
               <LoadingDots color="#fff" />
-              {/* <LoadingIcons.ThreeDots /> */}
             </div>
           ) : (
             // Send icon SVG in input field
             <AiOutlineSend className={styles.sendIcon} />
           )}
         </button>
-        {/* </form> */}
       </div>
       {error && (
         <div className="border border-red-400 rounded-md p-4">
           <p className="text-red-500">{error}</p>
         </div>
       )}
-      {/* input fields ================= */}
+      {/* input fields end ================= */}
     </Layout>
   );
 }

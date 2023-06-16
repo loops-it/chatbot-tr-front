@@ -75,17 +75,17 @@ export default function Home() {
                 <p className='text-dark text-uppercase mb-0'><strong>CONNECT WITH A LIVE AGENT</strong></p>
               </Link>
             </div>
-            <div className={`${styles.chatSelectBox} col-12  p-3 d-flex flex-column align-items-center ${styles.boxColor3} me-lg-2 mb-2 mb-lg-0`}>
+            {/* <div className={`${styles.chatSelectBox} col-12  p-3 d-flex flex-column align-items-center ${styles.boxColor3} me-lg-2 mb-2 mb-lg-0`}> */}
               {/* https://www.dfcc.lk/dfcc-video-chatz/ */}
-              <Link href={'/videobot'} >
+              {/* <Link href={'/videobot'} >
                 <p className='text-dark text-uppercase mb-0'><strong>CONNECT VIA VIDEO</strong></p>
-              </Link>
-            </div>
+              </Link> */}
+            {/* </div>
             <div className={`${styles.chatSelectBox} col-12  p-3 d-flex flex-column align-items-center ${styles.boxColor4} mb-2 mb-lg-0`}>
               <Link href={'/audiobot'} >
                 <p className='text-dark text-uppercase mb-0'><strong>Lorem ipsum dolor</strong></p>
               </Link>
-            </div>
+            </div> */}
           </div>
 
         </div>
